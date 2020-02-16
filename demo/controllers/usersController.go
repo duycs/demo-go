@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/duycs/demo-go/demo/infrastructure/auth"
-	"github.com/duycs/demo-go/demo/infrastructure/helpers"
+	"github.com/duycs/demo-go/demo/auth"
+	"github.com/duycs/demo-go/demo/helpers"
 	"github.com/duycs/demo-go/demo/models"
 	"github.com/gorilla/mux"
 )

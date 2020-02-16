@@ -3,18 +3,18 @@ package seed
 import (
 	"log"
 
-	"github.com/jinzhu/gorm"
 	"github.com/duycs/demo-go/demo/models"
+	"github.com/jinzhu/gorm"
 )
 
 var users = []models.User{
 	models.User{
-		Name: "Duy",
+		Account:  "Duy",
 		Email:    "duycs@gmail.com",
 		Password: "password",
 	},
 	models.User{
-		Name: "Phuong",
+		Account:  "Phuong",
 		Email:    "phuong@gmail.com",
 		Password: "password",
 	},
@@ -22,11 +22,11 @@ var users = []models.User{
 
 func Load(db *gorm.DB) {
 
-	err := db.Debug().DropTableIfExists(&models.Post{}, &models.User{}).Error
+	err := db.Debug().DropTableIfExists(&models.User{}).Error
 	if err != nil {
 		log.Fatalf("cannot drop table: %v", err)
 	}
-	err = db.Debug().AutoMigrate(&models.User{}, &models.Post{}).Error
+	err = db.Debug().AutoMigrate(&models.User{}).Error
 	if err != nil {
 		log.Fatalf("cannot migrate table: %v", err)
 	}

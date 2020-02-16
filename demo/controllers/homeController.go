@@ -3,10 +3,9 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/duycs/demo-go/demo"
-	"github.com/duycs/demo-go/demo/infratructure/helpers"
+	"github.com/duycs/demo-go/demo/helpers"
 )
 
 func (server *Server) Home(w http.ResponseWriter, r *http.Request) {
-	helpers.JSON(w, http.StatusOK, "Welcome To This Awesome API")
+	helpers.JSON(w, http.StatusOK, "Welcome to Home page")
 }
