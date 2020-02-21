@@ -15,6 +15,11 @@ import (
 	"github.com/duycs/demo-go/demo/models"
 )
 
+type Server struct {
+	DB     *gorm.DB
+	Router *mux.Router
+}
+
 func (server *Server) Initialize(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string) {
 
 	var err error

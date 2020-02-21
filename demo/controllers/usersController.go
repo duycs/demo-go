@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/duycs/demo-go/demo/auth"
-	"github.com/duycs/demo-go/demo/helpers"
+	"github.com/duycs/demo-go/demo/infrastructure/auth"
+	"github.com/duycs/demo-go/demo/infrastructure/helpers"
 	"github.com/duycs/demo-go/demo/models"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +37,7 @@ func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 
-		formattedError := formaterror.FormatError(err.Error())
+		formattedError := helpers.FormatError(err.Error())
 
 		helpers.ERROR(w, http.StatusInternalServerError, formattedError)
 		return
@@ -110,7 +111,7 @@ func (server *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	updatedUser, err := user.UpdateAUser(server.DB, uint32(uid))
 	if err != nil {
-		formattedError := formaterror.FormatError(err.Error())
+		formattedError := helpers.FormatError(err.Error())
 		helpers.ERROR(w, http.StatusInternalServerError, formattedError)
 		return
 	}
@@ -144,4 +145,49 @@ func (server *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Entity", fmt.Sprintf("%d", uid))
 	helpers.JSON(w, http.StatusNoContent, "")
+}
+
+func (server *Server) Login(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+	user := models.User{}
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	user.Prepare()
+	err = user.Validate("login")
+	if err != nil {
+		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+	token, err := server.SignIn(user.Email, user.Password)
+	if err != nil {
+		formattedError := helpers.FormatError(err.Error())
+		helpers.ERROR(w, http.StatusUnprocessableEntity, formattedError)
+		return
+	}
+	helpers.JSON(w, http.StatusOK, token)
+}
+
+func (server *Server) SignIn(email, password string) (string, error) {
+
+	var err error
+
+	user := models.User{}
+
+	err = server.DB.Debug().Model(models.User{}).Where("email = ?", email).Take(&user).Error
+	if err != nil {
+		return "", err
+	}
+	err = models.VerifyPassword(user.Password, password)
+	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
+		return "", err
+	}
+	return auth.CreateToken(user.ID)
 }
