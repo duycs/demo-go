@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/duycs/demo-go/API/demo/controllers"
-	"github.com/duycs/demo-go/API/demo/seed"
+	"github.com/duycs/demo-go/demo/controllers"
+	"github.com/duycs/demo-go/demo/seed"
 	"github.com/joho/godotenv"
 )
 

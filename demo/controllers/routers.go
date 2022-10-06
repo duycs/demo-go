@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/duycs/demo-go/API/demo/middlewares"
+	"github.com/duycs/demo-go/demo/middlewares"
 )
 
 func (server *Server) initializeRoutes() {
