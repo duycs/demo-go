@@ -12,7 +12,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
-	"github.com/duycs/demo-go/demo/models"
+	"github.com/duycs/demo-go/API/demo/models"
 )
 
 type Server struct {

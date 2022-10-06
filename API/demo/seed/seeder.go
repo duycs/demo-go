@@ -3,7 +3,7 @@ package seed
 import (
 	"log"
 
-	"github.com/duycs/demo-go/demo/models"
+	"github.com/duycs/demo-go/API/demo/models"
 	"github.com/jinzhu/gorm"
 )
 

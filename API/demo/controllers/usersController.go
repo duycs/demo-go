@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/duycs/demo-go/demo/infrastructure/auth"
-	"github.com/duycs/demo-go/demo/infrastructure/helpers"
-	"github.com/duycs/demo-go/demo/models"
+	"github.com/duycs/demo-go/API/demo/infrastructure/auth"
+	"github.com/duycs/demo-go/API/demo/infrastructure/helpers"
+	"github.com/duycs/demo-go/API/demo/models"
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 )
