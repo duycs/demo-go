@@ -18,5 +18,8 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+	golang.org/x/net v0.0.0-20190503192946-f4e77d36d62c
+	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
+	gopkg.in/Iwark/spreadsheet.v2 v2.0.0-20220412131121-41eea1483964
 	gopkg.in/go-playground/assert.v1 v1.2.1
 )
