@@ -1,4 +1,4 @@
-module github.com/duycs/demo-go
+module github.com/duycs/demo-go/API/demo
 
 go 1.13
 
