@@ -2,3 +2,4 @@
 bin/
 vendor/
 **/client_secret.json
+**/client_secret_desktop_app.json
