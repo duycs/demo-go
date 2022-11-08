@@ -1,8 +1,7 @@
 package main
 
-import "github.com/duycs/demo-go/demo/infrastructure/gsheet"
+import "github.com/duycs/demo-go/demo"
 
 func main() {
-	//demo.Run()
-	gsheet.Run()
+	demo.Run()
 }

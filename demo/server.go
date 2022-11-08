@@ -3,14 +3,32 @@ package demo
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"strconv"
+	"time"
 
-	"github.com/duycs/demo-go/demo/controllers"
+	"github.com/codegangsta/negroni"
+	"github.com/duycs/demo-go/demo/api/config"
+	"github.com/duycs/demo-go/demo/api/controllers"
+	"github.com/duycs/demo-go/demo/application/middlewares"
+	"github.com/duycs/demo-go/demo/application/services"
+	"github.com/duycs/demo-go/demo/domain/entity"
+	"github.com/duycs/demo-go/demo/infrastructure/repository"
 	"github.com/duycs/demo-go/demo/seed"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var server = controllers.Server{}
+type Server struct {
+	DB     *gorm.DB
+	Router *mux.Router
+}
+
+var server = Server{}
 
 func init() {
 	// loads values from .env into the system
@@ -20,7 +38,6 @@ func init() {
 }
 
 func Run() {
-
 	var err error
 	err = godotenv.Load()
 	if err != nil {
@@ -29,10 +46,97 @@ func Run() {
 		fmt.Println("We are getting the env values")
 	}
 
-	server.Initialize(os.Getenv("DB_DRIVER"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_PORT"), os.Getenv("DB_HOST"), os.Getenv("DB_NAME"))
-
-	seed.Load(server.DB)
+	server.Initialize()
 
 	server.Run(":8080")
+}
 
+func (server *Server) Run(addr string) {
+	fmt.Println("Listening to port 8080")
+	log.Fatal(http.ListenAndServe(addr, server.Router))
+}
+
+func (server *Server) Initialize() {
+	var err error
+
+	server.InitializeDatabase(os.Getenv("DB_DRIVER"), config.DB_USER, config.DB_PASSWORD, config.DB_PORT, config.DB_HOST, config.DB_DATABASE)
+
+	// inject repositories, services
+	taskRepo := repository.NewTaskContext(server.DB)
+	taskService := services.NewTaskService(taskRepo)
+	userRepo := repository.NewUserContext(server.DB)
+	userService := services.NewUserService(userRepo)
+	assignUseCase := services.NewAssignService(userService, taskService)
+
+	// register router
+	r := mux.NewRouter()
+	n := negroni.New(
+		negroni.HandlerFunc(middlewares.Cors),
+		negroni.NewLogger(),
+	)
+	controllers.RegisterTaskHandlers(r, *n, taskService)
+	controllers.RegisterUserHandlers(r, *n, userService)
+	controllers.RegisterAssignHandlers(r, *n, taskService, userService, assignUseCase)
+	http.Handle("/", r)
+	http.Handle("/metrics", promhttp.Handler())
+	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	// listen and serve
+	logger := log.New(os.Stderr, "logger: ", log.Lshortfile)
+	srv := &http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Addr:         ":" + strconv.Itoa(config.API_PORT),
+		Handler:      context.ClearHandler(http.DefaultServeMux),
+		ErrorLog:     logger,
+	}
+	err = srv.ListenAndServe()
+	if err != nil {
+		log.Panic(err.Error())
+	}
+}
+
+func (server *Server) InitializeDatabase(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string) {
+	var err error
+
+	if Dbdriver == "mysql" {
+		DBURL := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", DbUser, DbPassword, DbHost, DbPort, DbName)
+		server.DB, err = gorm.Open(Dbdriver, DBURL)
+		if err != nil {
+			fmt.Printf("Cannot connect to %s database", Dbdriver)
+			log.Fatal("This is the error:", err)
+		} else {
+			fmt.Printf("We are connected to the %s database", Dbdriver)
+		}
+	}
+	if Dbdriver == "postgres" {
+		DBURL := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
+		server.DB, err = gorm.Open(Dbdriver, DBURL)
+		if err != nil {
+			fmt.Printf("Cannot connect to %s database", Dbdriver)
+			log.Fatal("This is the error:", err)
+		} else {
+			fmt.Printf("We are connected to the %s database", Dbdriver)
+		}
+	}
+	if Dbdriver == "sqlite3" {
+		//DBURL := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
+		server.DB, err = gorm.Open(Dbdriver, DbName)
+		if err != nil {
+			fmt.Printf("Cannot connect to %s database\n", Dbdriver)
+			log.Fatal("This is the error:", err)
+		} else {
+			fmt.Printf("We are connected to the %s database\n", Dbdriver)
+		}
+		server.DB.Exec("PRAGMA foreign_keys = ON")
+	}
+
+	//database migration
+	server.DB.Debug().AutoMigrate(&entity.User{})
+
+	defer server.DB.Close()
+
+	seed.Load(server.DB)
 }

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/duycs/demo-go/demo/entities"
 	"github.com/duycs/demo-go/demo/infrastructure/auth"
 	"github.com/duycs/demo-go/demo/infrastructure/helpers"
 	"github.com/duycs/demo-go/demo/models"
@@ -21,7 +22,7 @@ func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
 	}
-	user := models.User{}
+	user := entities.User{}
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -33,7 +34,7 @@ func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	userCreated, err := user.SaveUser(server.DB)
+	userCreated, err := userServices.SaveUser(server.DB)
 
 	if err != nil {
 
@@ -48,9 +49,9 @@ func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) GetUsers(w http.ResponseWriter, r *http.Request) {
 
-	user := models.User{}
+	user := entities.User{}
 
-	users, err := user.FindAllUsers(server.DB)
+	users, err := userServices.FindAllUsers(server.DB)
 	if err != nil {
 		helpers.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -88,7 +89,7 @@ func (server *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	user := models.User{}
+	user := entities.User{}
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -122,7 +123,7 @@ func (server *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	user := models.User{}
+	user := entities.User{}
 
 	uid, err := strconv.ParseUint(vars["id"], 10, 32)
 	if err != nil {
@@ -138,7 +139,7 @@ func (server *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		helpers.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	_, err = user.DeleteAUser(server.DB, uint32(uid))
+	_, err = userServices.DeleteAUser(server.DB, uint32(uid))
 	if err != nil {
 		helpers.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -153,7 +154,7 @@ func (server *Server) Login(w http.ResponseWriter, r *http.Request) {
 		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	user := models.User{}
+	user := entities.User{}
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		helpers.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -179,13 +180,13 @@ func (server *Server) SignIn(email, password string) (string, error) {
 
 	var err error
 
-	user := models.User{}
+	user := entities.User{}
 
-	err = server.DB.Debug().Model(models.User{}).Where("email = ?", email).Take(&user).Error
+	err = server.DB.Debug().Model(entities.User{}).Where("email = ?", email).Take(&user).Error
 	if err != nil {
 		return "", err
 	}
-	err = models.VerifyPassword(user.Password, password)
+	err = entities.VerifyPassword(user.Password, password)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return "", err
 	}
