@@ -59,6 +59,7 @@ func (server *Server) Run(addr string) {
 func (server *Server) Initialize() {
 	var err error
 
+	// init data and migration
 	server.InitializeDatabase(os.Getenv("DB_DRIVER"), config.DB_USER, config.DB_PASSWORD, config.DB_PORT, config.DB_HOST, config.DB_DATABASE)
 
 	// inject repositories, services
@@ -66,7 +67,7 @@ func (server *Server) Initialize() {
 	taskService := services.NewTaskService(taskRepo)
 	userRepo := repository.NewUserContext(server.DB)
 	userService := services.NewUserService(userRepo)
-	assignUseCase := services.NewAssignService(userService, taskService)
+	assignmentUseCase := services.NewAssignmentService(userService, taskService)
 
 	// register router
 	r := mux.NewRouter()
@@ -76,7 +77,7 @@ func (server *Server) Initialize() {
 	)
 	controllers.RegisterTaskHandlers(r, *n, taskService)
 	controllers.RegisterUserHandlers(r, *n, userService)
-	controllers.RegisterAssignHandlers(r, *n, taskService, userService, assignUseCase)
+	controllers.RegisterAssignHandlers(r, *n, taskService, userService, assignmentUseCase)
 	http.Handle("/", r)
 	http.Handle("/metrics", promhttp.Handler())
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -122,7 +123,6 @@ func (server *Server) InitializeDatabase(Dbdriver, DbUser, DbPassword, DbPort, D
 		}
 	}
 	if Dbdriver == "sqlite3" {
-		//DBURL := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
 		server.DB, err = gorm.Open(Dbdriver, DbName)
 		if err != nil {
 			fmt.Printf("Cannot connect to %s database\n", Dbdriver)
@@ -135,6 +135,7 @@ func (server *Server) InitializeDatabase(Dbdriver, DbUser, DbPassword, DbPort, D
 
 	//database migration
 	server.DB.Debug().AutoMigrate(&entity.User{})
+	server.DB.Debug().AutoMigrate(&entity.Task{})
 
 	defer server.DB.Close()
 

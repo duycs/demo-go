@@ -10,6 +10,7 @@ type Task struct {
 	Title              string    `gorm:"size:255;not null;unique" json:"title"`
 	Description        string    `gorm:"size:255;not null;unique" json:"description"`
 	EstimationInSecond int       `gorm:"not null;" json:"estimation_in_second"`
+	Status		   	   Status	 `gorm:"size:25;not null;" json:"status"`
 	CreatedAt          time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt          time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 	IsDelete           bool
@@ -20,6 +21,7 @@ func CreateTask(title, description string, estimationInSecond int) (*Task, error
 		Title:              title,
 		Description:        description,
 		EstimationInSecond: estimationInSecond,
+		Status: 			Status.Undefined,
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -29,6 +31,20 @@ func CreateTask(title, description string, estimationInSecond int) (*Task, error
 	}
 
 	return t, nil
+}
+
+func (t *Task) Assigned() *Task{
+	t.Status = Status.Todo
+	return t
+}
+
+func (t *Task) InProgress() *Task{
+	t.Status = Status.Doing
+	return t
+}
+
+func (t *Task) Finished() *Task{
+	t.Status = Status.Done
 }
 
 func (t *Task) Validate() error {
