@@ -15,7 +15,7 @@ import (
 	"github.com/duycs/demo-go/demo/application/services"
 	"github.com/duycs/demo-go/demo/entities"
 	"github.com/duycs/demo-go/demo/infrastructure/repository"
-	"github.com/duycs/demo-go/demo/seed"
+	"github.com/duycs/demo-go/demo/infrastructure/seed"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -134,5 +134,6 @@ func (server *Server) InitializeDatabase(Dbdriver, DbUser, DbPassword, DbPort, D
 
 	defer server.DB.Close()
 
+	//seed data
 	seed.Load(server.DB)
 }
