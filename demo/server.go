@@ -30,15 +30,10 @@ type Server struct {
 
 var server = Server{}
 
-func init() {
-	// loads values from .env into the system
-	if err := godotenv.Load(); err != nil {
-		log.Print("sad .env file found")
-	}
-}
-
 func Run() {
 	var err error
+
+	// load values from .env into the system
 	err = godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error getting env, %v", err)
@@ -46,22 +41,36 @@ func Run() {
 		fmt.Println("We are getting the env values")
 	}
 
-	server.Initialize()
-
-	server.Run(":8080")
-}
-
-func (server *Server) Run(addr string) {
-	fmt.Println("Listening to port 8080")
-	log.Fatal(http.ListenAndServe(addr, server.Router))
-}
-
-func (server *Server) Initialize() {
-	var err error
-
 	// init data and migration
 	server.InitializeDatabase(os.Getenv("DB_DRIVER"), config.DB_USER, config.DB_PASSWORD, config.DB_PORT, config.DB_HOST, config.DB_DATABASE)
 
+	server.RegisterServiceAndRouter()
+
+	server.ListenToPort(":8080")
+}
+
+func (server *Server) ListenToPort(addr string) {
+	var err error
+
+	fmt.Println("Listening to port ", addr)
+	log.Fatal(http.ListenAndServe(addr, server.Router))
+
+	// listen and serve
+	logger := log.New(os.Stderr, "logger: ", log.Lshortfile)
+	srv := &http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Addr:         ":" + strconv.Itoa(config.API_PORT),
+		Handler:      context.ClearHandler(http.DefaultServeMux),
+		ErrorLog:     logger,
+	}
+	err = srv.ListenAndServe()
+	if err != nil {
+		log.Panic(err.Error())
+	}
+}
+
+func (server *Server) RegisterServiceAndRouter() {
 	// inject repositories, services
 	taskRepo := repository.NewTaskContext(server.DB)
 	taskService := services.NewTaskService(taskRepo)
@@ -83,20 +92,6 @@ func (server *Server) Initialize() {
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-
-	// listen and serve
-	logger := log.New(os.Stderr, "logger: ", log.Lshortfile)
-	srv := &http.Server{
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		Addr:         ":" + strconv.Itoa(config.API_PORT),
-		Handler:      context.ClearHandler(http.DefaultServeMux),
-		ErrorLog:     logger,
-	}
-	err = srv.ListenAndServe()
-	if err != nil {
-		log.Panic(err.Error())
-	}
 }
 
 func (server *Server) InitializeDatabase(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string) {

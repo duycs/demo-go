@@ -1,4 +1,4 @@
-package gsheet
+package google
 
 import (
 	"fmt"
