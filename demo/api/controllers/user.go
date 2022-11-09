@@ -54,6 +54,8 @@ func ListUsers(service services.UserUseCase) http.Handler {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(errorMessage))
 		}
+
+		//helpers.JSON(w, http.StatusOK, toJ)
 	})
 }
 
