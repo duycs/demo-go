@@ -1,35 +1,41 @@
 package services
 
+import (
+	"errors"
+
+	"github.com/duycs/demo-go/demo/domain/entity"
+)
+
 type AssignmentUseCase interface {
 	Assign(u *entity.User, t *entity.Task) error
 	Checkout(t *entity.Task) error
 }
 
 type AssignmentService struct {
-	userService user.UserUseCase
-	taskService task.TaskUseCase
+	userService UserUseCase
+	taskService TaskUseCase
 }
 
-func NewAssignmentService(u user.UserUseCase, t task.TaskUseCase) *AssignmentService {
+func NewAssignmentService(u UserUseCase, t TaskUseCase) *AssignmentService {
 	return &AssignmentService{
 		userService: u,
 		taskService: t,
 	}
 }
 
-func (s *Service) Assign(u *entity.User, t *entity.Task) error {
+func (s *AssignmentService) Assign(u *entity.User, t *entity.Task) error {
 	u, err := s.userService.GetUser(u.ID)
 	if err != nil {
 		return err
 	}
 
-	t, err = s.taskService.GetTask(b.ID)
+	t, err = s.taskService.GetTask(t.ID)
 	if err != nil {
 		return err
 	}
 
 	if t.EstimationInSecond <= 0 {
-		return error.New("Estimation time expired")
+		return errors.New("Estimation time expired")
 	}
 
 	err = u.AddTask(t.ID)
@@ -50,8 +56,8 @@ func (s *Service) Assign(u *entity.User, t *entity.Task) error {
 	return nil
 }
 
-//checkout task was finished then remove this
-func (s *Service) Checkout(t *entity.Task) error {
+// checkout task was finished then remove this
+func (s *AssignmentService) Checkout(t *entity.Task) error {
 	t, err := s.taskService.GetTask(t.ID)
 	if err != nil {
 		return err
@@ -68,7 +74,7 @@ func (s *Service) Checkout(t *entity.Task) error {
 			continue
 		}
 
-		if t.Status == Status.Finished {
+		if t.Status == entity.Status.Finished {
 			err = u.RemoveTask(t.ID)
 			if err != nil {
 				return err
