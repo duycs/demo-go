@@ -5,14 +5,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/duycs/demo-go/demo/models"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-
-	"github.com/duycs/demo-go/demo/models"
 )
 
 type Server struct {

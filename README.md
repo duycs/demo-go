@@ -29,3 +29,4 @@ Demo an architecture API use Go-lang
 - https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 - https://github.com/victorsteven/Go-JWT-Postgres-Mysql-Restful-API
 - https://medium.com/@eminetto/clean-architecture-using-golang-b63587aa5e3f
+- https://github.com/eminetto/clean-architecture-go-v2
