@@ -7,7 +7,7 @@ import (
 
 	"github.com/duycs/demo-go/demo/application/dto"
 	"github.com/duycs/demo-go/demo/application/services"
-	"github.com/duycs/demo-go/demo/domain/entity"
+	"github.com/duycs/demo-go/demo/entities"
 	"github.com/duycs/demo-go/demo/infrastructure/helpers"
 	"github.com/gorilla/mux"
 )
@@ -16,7 +16,7 @@ func ListTasks(service services.TaskUseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		errorMessage := "Error reading tasks"
 
-		var data []*entity.Task
+		var data []*entities.Task
 		var err error
 		title := r.URL.Query().Get("title")
 
@@ -43,9 +43,10 @@ func ListTasks(service services.TaskUseCase) http.Handler {
 		var toJ []*dto.Task
 		for _, d := range data {
 			toJ = append(toJ, &dto.Task{
-				ID:                 d.ID,
-				Title:              d.Title,
-				Description:        d.Description,
+				ID:          d.ID,
+				Title:       d.Title,
+				Description: d.Description,
+				//Status: 	d.Status,
 				EstimationInSecond: d.EstimationInSecond,
 			})
 		}
@@ -62,9 +63,10 @@ func CreateTask(service services.TaskUseCase) http.Handler {
 		errorMessage := "Error adding task"
 
 		var input struct {
-			Title              string `json:"title"`
-			Description        string `json:"description"`
-			EstimationInSecond int    `json:"estimation_in_second"`
+			Title       string `json:"title"`
+			Description string `json:"description"`
+			//Status: 	d.Status,
+			EstimationInSecond int `json:"estimation_in_second"`
 		}
 
 		err := json.NewDecoder(r.Body).Decode(&input)
@@ -124,9 +126,10 @@ func GetTask(service services.TaskUseCase) http.Handler {
 		}
 
 		toJ := &dto.Task{
-			ID:                 data.ID,
-			Title:              data.Title,
-			Description:        data.Description,
+			ID:          data.ID,
+			Title:       data.Title,
+			Description: data.Description,
+			//Status: 	d.Status,
 			EstimationInSecond: data.EstimationInSecond,
 		}
 

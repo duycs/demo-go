@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/duycs/demo-go/demo/domain/entity"
+	"github.com/duycs/demo-go/demo/entities"
 	"github.com/duycs/demo-go/demo/infrastructure/helpers"
 	"github.com/jinzhu/gorm"
 )
@@ -20,55 +20,55 @@ func NewUserContext(db *gorm.DB) *UserContext {
 	}
 }
 
-func (g *UserContext) List(u *entity.User) (*[]entity.User, error) {
+func (g *UserContext) List(u *entities.User) (*[]entities.User, error) {
 	var err error
-	users := []entity.User{}
-	err = g.db.Debug().Model(&entity.User{}).Limit(100).Find(&users).Error
+	users := []entities.User{}
+	err = g.db.Debug().Model(&entities.User{}).Limit(100).Find(&users).Error
 	if err != nil {
-		return &[]entity.User{}, err
+		return &[]entities.User{}, err
 	}
 	return &users, err
 }
 
-func (g *UserContext) FindByID(u *entity.User, uid uint32) (*entity.User, error) {
+func (g *UserContext) FindByID(u *entities.User, uid uint32) (*entities.User, error) {
 	var err error
-	err = g.db.Debug().Model(entity.User{}).Where("id = ?", uid).Take(&u).Error
+	err = g.db.Debug().Model(entities.User{}).Where("id = ?", uid).Take(&u).Error
 	if err != nil {
-		return &entity.User{}, err
+		return &entities.User{}, err
 	}
 	if gorm.IsRecordNotFoundError(err) {
-		return &entity.User{}, errors.New("User Not Found")
+		return &entities.User{}, errors.New("User Not Found")
 	}
 	return u, err
 }
 
-func (g *UserContext) Search(u *entity.User, query string) (*entity.User, error) {
+func (g *UserContext) Search(u *entities.User, query string) (*entities.User, error) {
 	var err error
-	err = g.db.Debug().Model(entity.User{}).Where("email = ?", query).Or("first_name = ?", query).Or("last_name = ?", query).Take(&u).Error
+	err = g.db.Debug().Model(entities.User{}).Where("email = ?", query).Or("first_name = ?", query).Or("last_name = ?", query).Take(&u).Error
 	if err != nil {
-		return &entity.User{}, err
+		return &entities.User{}, err
 	}
 	if gorm.IsRecordNotFoundError(err) {
-		return &entity.User{}, errors.New("User Not Found")
+		return &entities.User{}, errors.New("User Not Found")
 	}
 	return u, err
 }
 
-func (g *UserContext) Add(u *entity.User) (*entity.User, error) {
+func (g *UserContext) Add(u *entities.User) (*entities.User, error) {
 	var err error
 	err = g.db.Create(&u).Error
 	if err != nil {
-		return &entity.User{}, err
+		return &entities.User{}, err
 	}
 	return u, nil
 }
 
-func (g *UserContext) Update(u *entity.User, uid uint32) (*entity.User, error) {
+func (g *UserContext) Update(u *entities.User, uid uint32) (*entities.User, error) {
 	err := BeforeSave(u)
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.db = g.db.Debug().Model(&entity.User{}).Where("id = ?", uid).Take(&entity.User{}).UpdateColumns(
+	g.db = g.db.Debug().Model(&entities.User{}).Where("id = ?", uid).Take(&entities.User{}).UpdateColumns(
 		map[string]interface{}{
 			"password":   u.Password,
 			"email":      u.Email,
@@ -78,19 +78,19 @@ func (g *UserContext) Update(u *entity.User, uid uint32) (*entity.User, error) {
 		},
 	)
 	if g.db.Error != nil {
-		return &entity.User{}, g.db.Error
+		return &entities.User{}, g.db.Error
 	}
 
-	err = g.db.Debug().Model(&entity.User{}).Where("id = ?", uid).Take(&u).Error
+	err = g.db.Debug().Model(&entities.User{}).Where("id = ?", uid).Take(&u).Error
 	if err != nil {
-		return &entity.User{}, err
+		return &entities.User{}, err
 	}
 	return u, nil
 }
 
-func (g *UserContext) Delete(u *entity.User, uid uint32) (int64, error) {
+func (g *UserContext) Delete(u *entities.User, uid uint32) (int64, error) {
 
-	g.db = g.db.Debug().Model(&entity.User{}).Where("id = ?", uid).Take(&entity.User{}).Delete(&entity.User{})
+	g.db = g.db.Debug().Model(&entities.User{}).Where("id = ?", uid).Take(&entities.User{}).Delete(&entities.User{})
 
 	if g.db.Error != nil {
 		return 0, g.db.Error
@@ -98,7 +98,7 @@ func (g *UserContext) Delete(u *entity.User, uid uint32) (int64, error) {
 	return g.db.RowsAffected, nil
 }
 
-func BeforeSave(u *entity.User) error {
+func BeforeSave(u *entities.User) error {
 	hashedPassword, err := helpers.Hash(u.Password)
 	if err != nil {
 		return err

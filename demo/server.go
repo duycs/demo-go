@@ -13,7 +13,7 @@ import (
 	"github.com/duycs/demo-go/demo/api/controllers"
 	"github.com/duycs/demo-go/demo/application/middlewares"
 	"github.com/duycs/demo-go/demo/application/services"
-	"github.com/duycs/demo-go/demo/domain/entity"
+	"github.com/duycs/demo-go/demo/entities"
 	"github.com/duycs/demo-go/demo/infrastructure/repository"
 	"github.com/duycs/demo-go/demo/seed"
 	"github.com/gorilla/context"
@@ -77,7 +77,7 @@ func (server *Server) Initialize() {
 	)
 	controllers.RegisterTaskHandlers(r, *n, taskService)
 	controllers.RegisterUserHandlers(r, *n, userService)
-	controllers.RegisterAssignHandlers(r, *n, taskService, userService, assignmentUseCase)
+	controllers.RegisterAssignmentHandlers(r, *n, taskService, userService, assignmentUseCase)
 	http.Handle("/", r)
 	http.Handle("/metrics", promhttp.Handler())
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -134,8 +134,8 @@ func (server *Server) InitializeDatabase(Dbdriver, DbUser, DbPassword, DbPort, D
 	}
 
 	//database migration
-	server.DB.Debug().AutoMigrate(&entity.User{})
-	server.DB.Debug().AutoMigrate(&entity.Task{})
+	server.DB.Debug().AutoMigrate(&entities.User{})
+	server.DB.Debug().AutoMigrate(&entities.Task{})
 
 	defer server.DB.Close()
 

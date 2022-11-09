@@ -6,6 +6,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func RegisterAssignmentHandlers(r *mux.Router, n negroni.Negroni, taskService services.TaskUseCase, userService services.UserUseCase, assignmentService services.AssignmentUseCase) {
+	r.Handle("/v1/assignment/assign/{task_id}/{user_id}", n.With(
+		negroni.Wrap(AssignTask(taskService, userService, assignmentService)),
+	)).Methods("GET", "OPTIONS").Name("assign")
+
+	r.Handle("/v1/assignment/checkout/{task_id}", n.With(
+		negroni.Wrap(Checkout(taskService, assignmentService)),
+	)).Methods("GET", "OPTIONS").Name("checkout")
+}
+
 func RegisterUserHandlers(r *mux.Router, n negroni.Negroni, service services.UserUseCase) {
 	r.Handle("/v1/users", n.With(
 		negroni.Wrap(ListUsers(service)),

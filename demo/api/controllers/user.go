@@ -7,7 +7,7 @@ import (
 
 	"github.com/duycs/demo-go/demo/application/dto"
 	"github.com/duycs/demo-go/demo/application/services"
-	"github.com/duycs/demo-go/demo/domain/entity"
+	"github.com/duycs/demo-go/demo/entities"
 	"github.com/duycs/demo-go/demo/infrastructure/helpers"
 	"github.com/gorilla/mux"
 )
@@ -16,7 +16,7 @@ func ListUsers(service services.UserUseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		errorMessage := "Error reading users"
 
-		var data []*entity.User
+		var data []*entities.User
 		var err error
 
 		name := r.URL.Query().Get("name")

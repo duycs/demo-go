@@ -3,12 +3,12 @@ package services
 import (
 	"errors"
 
-	"github.com/duycs/demo-go/demo/domain/entity"
+	"github.com/duycs/demo-go/demo/entities"
 )
 
 type AssignmentUseCase interface {
-	Assign(u *entity.User, t *entity.Task) error
-	Checkout(t *entity.Task) error
+	Assign(u *entities.User, t *entities.Task) error
+	Checkout(t *entities.Task) error
 }
 
 type AssignmentService struct {
@@ -23,7 +23,7 @@ func NewAssignmentService(u UserUseCase, t TaskUseCase) *AssignmentService {
 	}
 }
 
-func (s *AssignmentService) Assign(u *entity.User, t *entity.Task) error {
+func (s *AssignmentService) Assign(u *entities.User, t *entities.Task) error {
 	u, err := s.userService.GetUser(u.ID)
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (s *AssignmentService) Assign(u *entity.User, t *entity.Task) error {
 }
 
 // checkout task was finished then remove this
-func (s *AssignmentService) Checkout(t *entity.Task) error {
+func (s *AssignmentService) Checkout(t *entities.Task) error {
 	t, err := s.taskService.GetTask(t.ID)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (s *AssignmentService) Checkout(t *entity.Task) error {
 			continue
 		}
 
-		if t.Status == entity.Status.Finished {
+		if t.Status == entities.Done {
 			err = u.RemoveTask(t.ID)
 			if err != nil {
 				return err

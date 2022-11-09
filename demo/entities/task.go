@@ -1,4 +1,4 @@
-package entity
+package entities
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ type Task struct {
 	Title              string     `gorm:"size:255;not null;unique" json:"title"`
 	Description        string     `gorm:"size:255;not null;unique" json:"description"`
 	EstimationInSecond int        `gorm:"not null;" json:"estimation_in_second"`
-	Status             TaskStatus `gorm:"type:enum('', 'Todo', 'Doing', 'Done')";"column:status"`
+	Status             TaskStatus `sql:"type:enum('', 'Todo', 'Doing', 'Done')" gorm:"column:status"`
 	CreatedAt          time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt          time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 	IsDelete           bool

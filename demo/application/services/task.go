@@ -4,19 +4,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/duycs/demo-go/demo/domain/entity"
+	"github.com/duycs/demo-go/demo/entities"
 	"github.com/duycs/demo-go/demo/infrastructure/helpers"
 )
 
 type TaskReader interface {
-	FindByID(id uint32) (*entity.Task, error)
-	Search(query string) ([]*entity.Task, error)
-	List() ([]*entity.Task, error)
+	FindByID(id uint32) (*entities.Task, error)
+	Search(query string) ([]*entities.Task, error)
+	List() ([]*entities.Task, error)
 }
 
 type TaskWriter interface {
-	Add(e *entity.Task) (uint32, error)
-	Update(e *entity.Task) error
+	Add(e *entities.Task) (uint32, error)
+	Update(e *entities.Task) error
 	Delete(id uint32) error
 }
 
@@ -26,11 +26,11 @@ type TaskRepository interface {
 }
 
 type TaskUseCase interface {
-	GetTask(id uint32) (*entity.Task, error)
-	SearchTasks(query string) ([]*entity.Task, error)
-	ListTasks() ([]*entity.Task, error)
+	GetTask(id uint32) (*entities.Task, error)
+	SearchTasks(query string) ([]*entities.Task, error)
+	ListTasks() ([]*entities.Task, error)
 	CreateTask(title string, description string, estimationInSecond int) (uint32, error)
-	UpdateTask(e *entity.Task) error
+	UpdateTask(e *entities.Task) error
 	DeleteTask(id uint32) error
 }
 
@@ -45,14 +45,14 @@ func NewTaskService(r TaskRepository) *TaskService {
 }
 
 func (s *TaskService) CreateTask(title string, description string, estimationInSecond int) (uint32, error) {
-	t, err := entity.CreateTask(title, description, estimationInSecond)
+	t, err := entities.CreateTask(title, description, estimationInSecond)
 	if err != nil {
 		return t.ID, err
 	}
 	return s.repo.Add(t)
 }
 
-func (s *TaskService) GetTask(id uint32) (*entity.Task, error) {
+func (s *TaskService) GetTask(id uint32) (*entities.Task, error) {
 	t, err := s.repo.FindByID(id)
 	if t == nil {
 		return nil, helpers.ErrNotFound
@@ -64,7 +64,7 @@ func (s *TaskService) GetTask(id uint32) (*entity.Task, error) {
 	return t, nil
 }
 
-func (s *TaskService) SearchTasks(query string) ([]*entity.Task, error) {
+func (s *TaskService) SearchTasks(query string) ([]*entities.Task, error) {
 	tasks, err := s.repo.Search(strings.ToLower(query))
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (s *TaskService) SearchTasks(query string) ([]*entity.Task, error) {
 	return tasks, nil
 }
 
-func (s *TaskService) ListTasks() ([]*entity.Task, error) {
+func (s *TaskService) ListTasks() ([]*entities.Task, error) {
 	tasks, err := s.repo.List()
 	if err != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func (s *TaskService) DeleteTask(id uint32) error {
 	return s.repo.Delete(id)
 }
 
-func (s *TaskService) UpdateTask(e *entity.Task) error {
+func (s *TaskService) UpdateTask(e *entities.Task) error {
 	err := e.Validate()
 	if err != nil {
 		return err
